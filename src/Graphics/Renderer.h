@@ -8,7 +8,7 @@ public:
 
 	Renderer();
 
-	void RenderQuad(Shader& shader, float x, float y, float w, float h, glm::vec3 color = {1, 1, 1});
+	void RenderQuad(Shader* shader, float x, float y, float w, float h, glm::vec3 color = {1, 1, 1});
 
 private:
 

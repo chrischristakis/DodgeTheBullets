@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 // ----- HOISTS ------ //
 void InitQuadData(unsigned int& vbo, unsigned int& vao);
 
@@ -8,14 +10,17 @@ Renderer::Renderer() {
 	InitQuadData(m_quadVBO, m_quadVAO);
 }
 
-void Renderer::RenderQuad(Shader& shader, float x, float y, float w, float h, glm::vec3 color) {
+void Renderer::RenderQuad(Shader* shader, float x, float y, float w, float h, glm::vec3 color) {
 	glBindVertexArray(m_quadVAO);
 
-	glm::mat4 mvp(1.0f);
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.0f));
+	model = glm::scale(model, glm::vec3(w, h, 1.0f));
 
-	shader.Use();
-	shader.SetVec3f("color", color);
-	shader.SetMatrix4f("mvp", mvp);
+	glm::mat4 mvp = model;
+
+	shader->Use();
+	shader->SetVec3f("color", color);
+	shader->SetMatrix4f("mvp", mvp);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glBindVertexArray(0);

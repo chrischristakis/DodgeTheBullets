@@ -4,8 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Graphics/Shader.h"
-#include "Graphics/Renderer.h"
+#include "Scene.h"
 
 // -------- GLOBALS -------- //
 
@@ -51,15 +50,23 @@ int main()
     GLFWwindow* window = InitWindow();
     InitGL();
 
-    Shader shader("shaders/shader.vs", "shaders/shader.fs");
-    Renderer renderer;
+    Scene scene;
 
+    // Game loop
+    float deltaTime = 0.0f; // in seconds
+    float last = 0.0f;
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
 
-        renderer.RenderQuad(shader, 0, 0, 1, 1);
+        // Update delta time
+        float now = glfwGetTime();
+        deltaTime = now - last;
+        last = now;
+
+        scene.Update(deltaTime);
+        scene.Render();
 
         glfwSwapBuffers(window);
     }
