@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Core/Audio.h"
 #include "Scene.h"
 
 // -------- GLOBALS -------- //
@@ -43,12 +44,17 @@ void InitGL() {
         std::cout << "Could not initialize GLAD" << std::endl;
 }
 
+void InitCore() {
+    Audio::Init(32);
+}
+
 // -------- MAIN ------- //
 
 int main()
 {
     GLFWwindow* window = InitWindow();
     InitGL();
+    InitCore();
 
     Scene scene;
 
@@ -64,6 +70,9 @@ int main()
         float now = glfwGetTime();
         deltaTime = now - last;
         last = now;
+
+        // Core updates
+        Audio::Update();
 
         scene.Update(deltaTime);
         scene.Render();

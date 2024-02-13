@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
-#include "Graphics/Renderer.h"
-#include "Graphics/Shader.h"
+#include "Core/Renderer.h"
+#include "Core/Shader.h"
 
 class Scene {
 public:
