@@ -4,64 +4,37 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Context.h"
 #include "Core/Audio.h"
 #include "Scene.h"
 
-// -------- GLOBALS -------- //
-
-int windowWidth = 1200, windowHeight = 1000;
-
-// -------- CALLBACKS -------- //
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE)
-        glfwSetWindowShouldClose(window, true);
-}
-
 // -------- FUNCTIONS -------- //
 
-GLFWwindow* InitWindow() {
-    GLFWwindow* window;
-    if (!glfwInit()) {
-        std::cout << "Could not initialize GLFW" << std::endl;
-        return nullptr;
-    }
-
-    window = glfwCreateWindow(windowWidth, windowHeight, "Dodge the bullets!", NULL, NULL);
-    if (!window)
-    {  
-        std::cout << "Could not create window" << std::endl;
-        return nullptr;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSetKeyCallback(window, key_callback);
-
-    return window;
-}
-
 void InitGL() {
+    // must be called after gl context is current, so after window is created.
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         std::cout << "Could not initialize GLAD" << std::endl;
 }
 
-void InitCore() {
-    Audio::Init(32);
+void Init() {
+    Context::CreateWindow(new Window(1200, 1000, "Dodge the bullets!!!"));
+    Context::CreateAudio(new Audio(32));
+
+    InitGL();
 }
 
 // -------- MAIN ------- //
 
 int main()
 {
-    GLFWwindow* window = InitWindow();
-    InitGL();
-    InitCore();
+    Init();
 
     Scene scene;
 
     // Game loop
     float deltaTime = 0.0f; // in seconds
     float last = 0.0f;
-    while (!glfwWindowShouldClose(window))
+    while (Context::GetWindow()->IsOpen())
     {
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
@@ -72,12 +45,12 @@ int main()
         last = now;
 
         // Core updates
-        Audio::Update();
+        Context::GetAudio()->Update();
 
         scene.Update(deltaTime);
         scene.Render();
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(Context::GetWindow()->GetNativeWindow());
     }
 
     glfwTerminate();

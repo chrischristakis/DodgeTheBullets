@@ -11,7 +11,7 @@
         std::terminate(); \
     }
 
-void Audio::Init(int MaxChannels) {
+Audio::Audio(int MaxChannels) {
 	m_maxChannels = MaxChannels;
 
 	FMOD_RESULT result = FMOD::System_Create(&m_system);
@@ -25,10 +25,22 @@ void Audio::Init(int MaxChannels) {
 		m_idQueue.push(i);
 }
 
+Audio::~Audio() {
+	for (auto& [id, channel] : m_channelMap)
+		channel->stop();
+	m_channelMap.clear();
+
+	for (auto& [id, sound] : m_soundMap)
+		sound->release();
+	m_soundMap.clear();
+
+	m_system->release();
+}
+
 void Audio::Update() {
 	m_system->update();
 
-	// Remove finished channels from the map
+	// Remove finished playbacks from the channel map
 	for ( ChannelMap::iterator it = m_channelMap.begin(); it != m_channelMap.end(); ) {
 		bool playing;
 
@@ -37,8 +49,11 @@ void Audio::Update() {
 
 		channel->isPlaying(&playing);
 		if (!playing) {
+			
+			// Add the ID back into the queue for use
 			m_idQueue.push(playbackId);
 			it = m_channelMap.erase(it);
+
 		}
 		else
 			it++;
@@ -46,6 +61,11 @@ void Audio::Update() {
 }
 
 void Audio::CreateSound(const std::string& id, const std::string& path) {
+
+	if (m_soundMap.find(id) != m_soundMap.end()) {
+		std::cerr << "Sound with id '" << id << "' already exists" << std::endl;
+		return;
+	}
 
 	FMOD::Sound* fmodSound;
 
@@ -55,7 +75,7 @@ void Audio::CreateSound(const std::string& id, const std::string& path) {
 	m_soundMap.insert({ id, fmodSound });
 }
 
-Audio::PlaybackID Audio::PlaySound(const std::string& id, bool loop) {
+Audio::PlaybackID Audio::Play(const std::string& id, bool loop) {
 
 	SoundMap::iterator found = m_soundMap.find(id);
 	if (found == m_soundMap.end()) {
@@ -82,4 +102,18 @@ Audio::PlaybackID Audio::PlaySound(const std::string& id, bool loop) {
 
 	m_channelMap.insert({ playbackId, channel });
 	return playbackId;
+}
+
+void Audio::Stop(PlaybackID id) {
+
+	ChannelMap::iterator found = m_channelMap.find(id);
+	if (found == m_channelMap.end()) {
+		std::cerr << "Playback with id '" << id << "' doesn't exist" << std::endl;
+		return;
+	}
+
+	FMOD::Channel* fmodChannel = found->second;
+
+	FMOD_RESULT result = fmodChannel->stop();
+	FMOD_ASSERT(result, "Playback could not stop!");
 }

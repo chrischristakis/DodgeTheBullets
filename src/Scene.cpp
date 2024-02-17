@@ -2,14 +2,16 @@
 #include <iostream>
 
 #include "Core/Audio.h"
+#include "Context.h"
 
+Audio::PlaybackID id;
 
 Scene::Scene() {
 	m_quadShader = std::make_unique<Shader>("shaders/shader.vs", "shaders/shader.fs");
 	m_Renderer = std::make_unique<Renderer>();
 
-	Audio::CreateSound("song", "assets/palmtreepanic.wav");
-	Audio::PlaySound("song", true);
+	Context::GetAudio()->CreateSound("song", "assets/palmtreepanic.wav");
+	id = Context::GetAudio()->Play("song");
 }
 
 void Scene::Render() {
