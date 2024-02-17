@@ -27,6 +27,18 @@ bool Window::IsOpen() {
     return !glfwWindowShouldClose(m_window);
 }
 
+void Window::Close() {
+    glfwSetWindowShouldClose(m_window, true);
+}
+
 GLFWwindow* Window::GetNativeWindow() {
 	return m_window;
+}
+
+void Window::EnableVsync(bool vsync) {
+    glfwSwapInterval((vsync) ? 1 : 0);
+}
+
+void Window::AttachResizeCallback(GLFWwindowsizefun callback) {
+    glfwSetWindowSizeCallback(m_window, callback);
 }

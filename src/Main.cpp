@@ -10,6 +10,8 @@
 
 // -------- FUNCTIONS -------- //
 
+Scene* scene;
+
 void InitGL() {
     // must be called after gl context is current, so after window is created.
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -17,10 +19,23 @@ void InitGL() {
 }
 
 void Init() {
-    Context::CreateWindow(new Window(1200, 1000, "Dodge the bullets!!!"));
-    Context::CreateAudio(new Audio(32));
-
+    Context::CreateWindow(new Window(1520, 885, "Dodge the bullets!!!"));
     InitGL();
+    Context::CreateAudio(new Audio(32));
+    Context::CreateCamera(new Camera(2.0f, 16.0f/9.0f));
+
+    // So camera syncs with window size
+    Context::GetCamera()->OnResize(1520, 885);
+
+    scene = new Scene();  // not sure how I feel about this being a global, but needs to be to use in resize callback.
+
+    Context::GetWindow()->AttachResizeCallback([](GLFWwindow* window, int width, int height) {
+        Context::GetCamera()->OnResize(width, height);
+        
+        // Render scene when resizing since glfw freezes by default.
+        scene->Render();
+        glfwSwapBuffers(window);
+    });
 }
 
 // -------- MAIN ------- //
@@ -28,8 +43,6 @@ void Init() {
 int main()
 {
     Init();
-
-    Scene scene;
 
     // Game loop
     float deltaTime = 0.0f; // in seconds
@@ -47,12 +60,13 @@ int main()
         // Core updates
         Context::GetAudio()->Update();
 
-        scene.Update(deltaTime);
-        scene.Render();
+        scene->Update(deltaTime);
+        scene->Render();
 
         glfwSwapBuffers(Context::GetWindow()->GetNativeWindow());
     }
 
+    delete scene;
     glfwTerminate();
     return 0;
 }

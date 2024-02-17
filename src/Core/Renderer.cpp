@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include "../Context.h"
 
 // ----- HOISTS ------ //
 void InitQuadData(unsigned int& vbo, unsigned int& vao);
@@ -13,10 +14,10 @@ Renderer::Renderer() {
 void Renderer::RenderQuad(Shader* shader, float x, float y, float w, float h, glm::vec3 color) {
 	glBindVertexArray(m_quadVAO);
 
-	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.0f));
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.1f));
 	model = glm::scale(model, glm::vec3(w, h, 1.0f));
 
-	glm::mat4 mvp = model;
+	glm::mat4 mvp = model * Context::GetCamera()->GetProjectionMatrix();
 
 	shader->Use();
 	shader->SetVec3f("color", color);

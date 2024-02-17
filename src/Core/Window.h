@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <string>
+#include <functional>
 
 class Window {
 public:
@@ -11,6 +12,11 @@ public:
 	GLFWwindow* GetNativeWindow();
 
 	bool IsOpen();
+	void Close();
+
+	void AttachResizeCallback(GLFWwindowsizefun);
+
+	void EnableVsync(bool vsync);
 
 private:
 	inline static bool m_glfwInitialized = false;

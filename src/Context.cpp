@@ -16,3 +16,11 @@ void Context::CreateAudio(Audio* audio) {
 Audio* Context::GetAudio() {
 	return m_audioInstance.get();
 }
+
+void Context::CreateCamera(Camera* camera) {
+	m_cameraInstance = std::unique_ptr<Camera>(camera);
+}
+
+Camera* Context::GetCamera() {
+	return m_cameraInstance.get();
+}
