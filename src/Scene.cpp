@@ -3,7 +3,10 @@
 
 #include "Core/Audio.h"
 #include "Context.h"
+#include "ECS.h"
 #include <GLFW/glfw3.h>
+
+#include "Components/Transform.h"
 
 Audio::PlaybackID id;
 
@@ -13,10 +16,14 @@ Scene::Scene() {
 
 	//Context::GetAudio()->CreateSound("song", "assets/palmtreepanic.wav");
 	//id = Context::GetAudio()->Play("song");
+
+	ECS ecs(10);
+
+	EntityID player = ecs.CreateEntity();
+	EntityID monster = ecs.CreateEntity();
 }
 
 void Scene::Render() {
-	m_Renderer->RenderQuad(m_quadShader.get(), 0, 0, 10.0f, 10.0f, {0.7f, 0.2f, 0.1f});
 	m_Renderer->RenderQuad(m_quadShader.get(), 0, 0, 1.0f, 1.0f);
 }
 
