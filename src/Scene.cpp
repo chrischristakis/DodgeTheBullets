@@ -21,6 +21,14 @@ Scene::Scene() {
 
 	EntityID player = ecs.CreateEntity();
 	EntityID monster = ecs.CreateEntity();
+
+	ecs.AddComponent<Transform>(player, new Transform(1, 2));
+	ecs.AddComponent<Transform>(monster, new Transform(3, 4));
+	Transform& t = ecs.GetComponent<Transform>(player);
+	Transform& tm = ecs.GetComponent<Transform>(monster);
+	tm.x = 7;
+
+	std::cout << t.x << ", " << t.y << "\n";
 }
 
 void Scene::Render() {
