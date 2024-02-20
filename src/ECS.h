@@ -16,57 +16,45 @@
 using EntityID = unsigned int;
 
 // Base class needed for polymorphism and storing generic containers.
-class BaseComponentContainer {
+class BaseComponentPool {
 public:
-	virtual ~BaseComponentContainer() { };
-
-	// Prints out all IDs belonging to a component
-	virtual std::vector<EntityID> GetAllIDs() = 0;
+	virtual ~BaseComponentPool() { };
 };
 
 // Holds generic components
 template <typename T>
-class ComponentContainer : public BaseComponentContainer {
+class ComponentPool : public BaseComponentPool {
 public:
 
-	~ComponentContainer() {
+	ComponentPool(int MAX_ENTITIES) {
+		for (int i = 0; i < MAX_ENTITIES; i++)
+			m_Components.push_back({ T() });
+	}
+
+	~ComponentPool() {
 		m_Components.clear();
 	}
 
 	T& AddComponent(EntityID id, T&& component) {
-		LOG_ASSERT(m_Components.find(id) == m_Components.end(),
-			"Entity [" << std::to_string(id) << "] already has component of type '" << typeid(T).name() << "'");
 
-		m_Components.emplace(id, component);
+		m_Components[id] = std::move(component);
 		return m_Components[id];
 	}
 
 	T& GetComponent(EntityID id) {
-		LOG_ASSERT(m_Components.find(id) != m_Components.end(),
-			"Entity [" << std::to_string(id) << "] has no component of type '" << typeid(T).name() << "'");
 
 		return m_Components[id];
 	}
 
 	void DeleteComponent(EntityID id) {
-		LOG_ASSERT(m_Components.find(id) != m_Components.end(),
-			"Entity [" << std::to_string(id) << "] has no component of type '" << typeid(T).name() << "'");
 
-		m_Components.erase(id);
-	}
-
-	// Get all IDs registered to this component
-	std::vector<EntityID> GetAllIDs() override {
-		std::vector<EntityID> res;
-		for (auto& [id, component] : m_Components)
-			res.push_back(id);
-		return res;
+		m_Components[id] = T();
 	}
 
 private:
 
 	// Using a map, so no data locality.
-	std::unordered_map<EntityID, T> m_Components;
+	std::vector<T> m_Components;
 
 };
 
@@ -83,7 +71,7 @@ public:
 	template <typename T>
 	void RegisterComponent() {
 		const char* typeName = typeid(T).name();
-		m_componentContainerMap.insert({ typeName, std::make_unique<ComponentContainer<T>>() });
+		m_componentContainerMap.insert({ typeName, std::make_unique<ComponentPool<T>>(m_MAX_ENTITIES) });
 	}
 	
 	template <typename T>
@@ -94,8 +82,8 @@ public:
 		if (m_componentContainerMap.find(typeName) == m_componentContainerMap.end())
 			RegisterComponent<T>();
 
-		BaseComponentContainer* genericPtr = m_componentContainerMap[typeName].get();
-		ComponentContainer<T>* container = dynamic_cast<ComponentContainer<T>*>(genericPtr);
+		BaseComponentPool* genericPtr = m_componentContainerMap[typeName].get();
+		ComponentPool<T>* container = dynamic_cast<ComponentPool<T>*>(genericPtr);
 
 		// If dynamic cast fails
 		LOG_ASSERT(container, "ECS dynamic cast failed when casting Component Container of type '" << typeName << "'");
@@ -111,8 +99,8 @@ public:
 		LOG_ASSERT(m_componentContainerMap.find(typeName) != m_componentContainerMap.end(), 
 			"No components of type '" << typeName << "' exist");
 
-		BaseComponentContainer* genericPtr = m_componentContainerMap[typeName].get();
-		ComponentContainer<T>* container = reinterpret_cast<ComponentContainer<T>*>(genericPtr);
+		BaseComponentPool* genericPtr = m_componentContainerMap[typeName].get();
+		ComponentPool<T>* container = reinterpret_cast<ComponentPool<T>*>(genericPtr);
 
 		return container->GetComponent(id);
 	}
@@ -124,14 +112,11 @@ public:
 		LOG_ASSERT(m_componentContainerMap.find(typeName) != m_componentContainerMap.end(),
 			"No components of type '" << typeName << "' exist");
 
-		BaseComponentContainer* genericPtr = m_componentContainerMap[typeName].get();
-		ComponentContainer<T>* container = reinterpret_cast<ComponentContainer<T>*>(genericPtr);
+		BaseComponentPool* genericPtr = m_componentContainerMap[typeName].get();
+		ComponentPool<T>* container = reinterpret_cast<ComponentPool<T>*>(genericPtr);
 
 		container->DeleteComponent(id);
 	}
-
-	// For debugging, prints out all registered components and the entities which have them.
-	void PrintConnections();
 
 private:
 
@@ -142,7 +127,7 @@ private:
 
 	// Contains the name of the component as a key, and the container holding those components as a value.
 	using TypeName = const char*;
-	std::map<TypeName, std::unique_ptr<BaseComponentContainer>> m_componentContainerMap;
+	std::map<TypeName, std::unique_ptr<BaseComponentPool>> m_componentContainerMap;
 };
 
 
