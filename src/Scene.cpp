@@ -6,6 +6,9 @@
 #include "ECS.h"
 #include <GLFW/glfw3.h>
 
+#include "Components/Transform.h"
+#include "Components/Physics.h"
+
 Audio::PlaybackID id;
 
 Scene::Scene() {
@@ -14,6 +17,16 @@ Scene::Scene() {
 
 	//Context::GetAudio()->CreateSound("song", "assets/palmtreepanic.wav");
 	//id = Context::GetAudio()->Play("song");
+
+	ECS ecs(5);
+
+	EntityID player = ecs.CreateEntity();
+	EntityID monster = ecs.CreateEntity();
+
+	Transform& t = ecs.AddComponent<Transform>(player, { 10, 10, 10, 10 });
+	ecs.AddComponent<Transform>(monster, { 10, 10 });
+	ecs.AddComponent<Physics>(monster, { 10, 20 });
+
 }
 
 void Scene::Render() {

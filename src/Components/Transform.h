@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "Component.h"
 
 struct Transform : public Component {
