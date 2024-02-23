@@ -24,3 +24,11 @@ void Context::CreateCamera(Camera* camera) {
 Camera* Context::GetCamera() {
 	return m_cameraInstance.get();
 }
+
+void Context::CreateECS(ECS* ecs) {
+	m_ecs = std::unique_ptr<ECS>(ecs);
+}
+
+ECS* Context::GetECS() {
+	return m_ecs.get();
+}
