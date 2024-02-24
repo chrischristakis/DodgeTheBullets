@@ -8,9 +8,6 @@
 #include "Core/Audio.h"
 #include "Scene.h"
 
-#include "Components/Transform.h"
-#include "Components/Physics.h"
-
 // -------- FUNCTIONS -------- //
 
 Scene* scene;

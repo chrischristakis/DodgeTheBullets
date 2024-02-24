@@ -15,7 +15,7 @@ public:
 private:
 
 	std::unique_ptr<Shader> m_quadShader;
-	std::unique_ptr<Renderer> m_Renderer;
+	std::unique_ptr<Renderer> m_renderer;
 	std::unique_ptr<ECS> m_ecs;
 
 };

@@ -148,6 +148,34 @@ public:
 		return *componentPtr;
 	}
 
+	/*! Returns true if an entity has the specified component and false if not
+	*
+	* @param id: ID of the entity we wish to retrieve the component for
+	*
+	*/
+	template <typename T>
+	bool HasComponent(EntityID id) {
+		LOG_ASSERT(id >= 0 && id < m_MAX_ENTITIES, "Entity index out of range");
+		LOG_ASSERT(m_entityPool[id].inUse, "Trying to check for entity with id " << id << " that is not in use");
+		
+		ComponentMap& componentMap = m_entityPool[id].componentMap;
+		TypeName componentName = typeid(T).name();
+
+		return componentMap.find(componentName) != componentMap.end();
+	}
+
+	/*! Returns true if an entity has ALL of the specified components and false if not
+	*
+	* @usage: HasComponents<Transform, Physics>(entity);
+	* @param id: ID of the entity we wish to retrieve the component for
+	*
+	*/
+	template <typename... Ts>
+	bool HasComponents(EntityID id) {
+		// Fold operator, checks if the entity has each component in the parameter pack
+		return (HasComponent<Ts>(id) && ...);
+	}
+
 	/*! Retrieve a reference to the component for a particular entity
 	*
 	* @param id: ID of the entity we wish to retrieve the component for
@@ -205,6 +233,29 @@ public:
 		info.inUse = false;
 
 		m_availableEntities.push(id);
+	}
+
+	/*! Returns a vector that contains the IDs of every entity in use
+	*/
+	std::vector<EntityID> GetAllActiveIDs() {
+		std::vector<EntityID> res;
+		for (int i = 0; i < m_entityPool.size(); i++) {
+			if (m_entityPool[i].inUse)
+				res.push_back(i);
+		}
+		return res;
+	}
+
+	/*! Returns a vector that contains the IDs of every entity in use with the specified components
+	*/
+	template <typename... Ts>
+	std::vector<EntityID> GetAllActiveIDs() {
+		std::vector<EntityID> res;
+		for (int i = 0; i < m_entityPool.size(); i++) {
+			if (m_entityPool[i].inUse && HasComponents<Ts...>(i))
+				res.push_back(i);
+		}
+		return res;
 	}
 
 	/*
