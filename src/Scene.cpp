@@ -1,39 +1,44 @@
 #include "Scene.h"
 #include <iostream>
+#include <glm/glm.hpp>
 
 #include "Core/Audio.h"
 #include "Context.h"
 #include "ECS.h"
-#include <GLFW/glfw3.h>
+#include "Components/Common.h"
 
-#include "Components/Transform.h"
-#include "Components/Physics.h"
+#include "Game/Systems.h"
 
-Audio::PlaybackID id;
+EntityID player;
 
 Scene::Scene() {
 	m_quadShader = std::make_unique<Shader>("shaders/shader.vs", "shaders/shader.fs");
 	m_Renderer = std::make_unique<Renderer>();
+	m_ecs = std::make_unique<ECS>(100);
 
-	//Context::GetAudio()->CreateSound("song", "assets/palmtreepanic.wav");
-	//id = Context::GetAudio()->Play("song");
+	ECS& ecs = *m_ecs.get();
 
-	ECS ecs(5);
+	// Register ECS components on scene construction
+	ecs.RegisterComponent<Transform>();
+	ecs.RegisterComponent<Physics>();
 
-	EntityID player = ecs.CreateEntity();
-	EntityID monster = ecs.CreateEntity();
+	player = ecs.CreateEntity();
 
-	Transform& t = ecs.AddComponent<Transform>(player, { 10, 10, 10, 10 });
-	ecs.AddComponent<Transform>(monster, { 10, 10 });
-	ecs.AddComponent<Physics>(monster, { 10, 20 });
+	ecs.AddComponent<Transform>(player);
+	ecs.AddComponent<Physics>(player);
 
 }
 
 void Scene::Render() {
-	m_Renderer->RenderQuad(m_quadShader.get(), 0, 0, 1.0f, 1.0f);
+	ECS& ecs = *m_ecs.get();
+	Transform& transform = ecs.GetComponent<Transform>(player);
+
+	m_Renderer->RenderQuad(m_quadShader.get(), transform.position.x, transform.position.y, transform.scale.x, transform.scale.y);
 }
 
 void Scene::Update(float deltaTime) {
-	if (glfwGetKey(Context::GetWindow()->GetNativeWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		Context::GetWindow()->Close();
+	ECS& ecs = *m_ecs.get();
+
+	Systems::ProcessMovementInput(ecs, player, *Context::GetWindow());
+	Systems::Move(ecs, player, deltaTime);
 }

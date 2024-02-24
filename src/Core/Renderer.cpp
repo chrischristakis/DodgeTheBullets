@@ -12,16 +12,17 @@ Renderer::Renderer() {
 }
 
 void Renderer::RenderQuad(Shader* shader, float x, float y, float w, float h, glm::vec3 color) {
-	glBindVertexArray(m_quadVAO);
 
-	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.1f));
+	glm::mat4 model(1.0f);
+	model = glm::translate(model, glm::vec3(x, y, -0.1f));
 	model = glm::scale(model, glm::vec3(w, h, 1.0f));
 
-	glm::mat4 mvp = model * Context::GetCamera()->GetProjectionMatrix();
+	glm::mat4 mvp = Context::GetCamera()->GetProjectionMatrix() * model;
 
 	shader->Use();
 	shader->SetVec3f("color", color);
 	shader->SetMatrix4f("mvp", mvp);
+	glBindVertexArray(m_quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glBindVertexArray(0);

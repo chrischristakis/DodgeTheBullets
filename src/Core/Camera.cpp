@@ -33,7 +33,6 @@ void Camera::SetZoom(float zoom) {
 }
 
 void Camera::OnResize(int width, int height) {
-
 	float aspect = (float)width / (float)height;
 
 	// Keeps the target aspect ratio intact, centering the viewport in the window.

@@ -26,11 +26,6 @@ void Init() {
     InitGL();
     Context::CreateAudio(new Audio(32));
     Context::CreateCamera(new Camera(2.0f, 16.0f/9.0f));
-    Context::CreateECS(new ECS(100));
-
-    // Register components in ECS
-    Context::GetECS()->RegisterComponent<Transform>();
-    Context::GetECS()->RegisterComponent<Physics>();
 
     // So camera syncs with window size
     Context::GetCamera()->OnResize(1520, 885);
@@ -44,6 +39,8 @@ void Init() {
         scene->Render();
         glfwSwapBuffers(window);
     });
+
+    Context::GetWindow()->EnableVsync(false);
 }
 
 // -------- MAIN ------- //
@@ -59,6 +56,10 @@ int main()
     {
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // Escape to exit window
+        if (glfwGetKey(Context::GetWindow()->GetNativeWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            Context::GetWindow()->Close();
 
         // Update delta time
         float now = glfwGetTime();

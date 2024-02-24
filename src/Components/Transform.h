@@ -1,13 +1,11 @@
 #pragma once
 
-#include <iostream>
+#include <glm/glm.hpp>
 #include "Component.h"
 
 struct Transform : public Component {
-	float x, y;
-	float scaleX, scaleY;
+	glm::vec2 position, scale;
 
-	Transform(float x, float y, float scaleX = 1.0f, float scaleY = 1.0f):
-		x(x), y(y), scaleX(scaleX), scaleY(scaleY) { }
-	Transform() : Transform(0, 0, 1, 1) { }
+	Transform(glm::vec2 position = {0, 0}, glm::vec2 scale = {1, 1}) :
+		position(position), scale(scale) { }
 };

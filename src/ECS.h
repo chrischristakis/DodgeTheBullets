@@ -77,6 +77,8 @@ public:
 
 	ECS(int MAX_ENTITIES): m_MAX_ENTITIES(MAX_ENTITIES) {
 
+		m_entityPool.reserve(MAX_ENTITIES);
+
 		// Initialize entity pool for each entity ID
 		for (int i = 0; i < MAX_ENTITIES; i++) {
 			m_entityPool.emplace_back(EntityInfo());
@@ -119,7 +121,7 @@ public:
 	* 
 	*/
 	template <typename T>
-	T& AddComponent(EntityID id, T&& component) {
+	T& AddComponent(EntityID id, T&& component = {}) {
 		LOG_ASSERT(id >= 0 && id < m_MAX_ENTITIES, "Entity index out of range");
 		LOG_ASSERT(m_entityPool[id].inUse, "Trying to add component to entity with id " << id << " that is not in use");
 

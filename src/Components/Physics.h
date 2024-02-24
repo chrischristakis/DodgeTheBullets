@@ -1,11 +1,11 @@
 #pragma once
 
-#include <iostream>
+#include <glm/glm.hpp>
 #include "Component.h"
 
 struct Physics: public Component {
-	float velX, velY;
+	glm::vec2 velocity;
 
-	Physics(float velX = 0.0f, float velY = 0.0f) :
-		velX(velX), velY(velY) { }
+	Physics(glm::vec2 velocity = { 0, 0 }) :
+		velocity(velocity) { }
 };
