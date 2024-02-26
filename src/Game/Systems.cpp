@@ -1,6 +1,7 @@
 #include "Systems.h"
 
 #include <glm/glm.hpp>
+#include <vector>
 #include "../Components/Component.h"
 #include "CollisionUtil.h"
 
@@ -16,7 +17,7 @@ namespace Systems {
 		if (ecs.HasComponent<BoxCollider>(id)) {
 			BoxCollider& collider = ecs.GetComponent<BoxCollider>(id);
 
-			collider.position = transform.position;
+			collider.position += physics.velocity * deltaTime;
 		}
 	}
 
@@ -50,21 +51,52 @@ namespace Systems {
 		renderer.RenderQuadOutline(shader, collider.position, collider.scale, { 0, 1, 1 }, 2.0f);
 	}
 
-	void HandleSolidCollisions(ECS& ecs, EntityID id) {
+	void HandleSolidCollisions(ECS& ecs, EntityID id, float deltaTime) {
+		Transform& transform = ecs.GetComponent<Transform>(id);
 		BoxCollider& collider = ecs.GetComponent<BoxCollider>(id);
+		Physics& physics = ecs.GetComponent<Physics>(id);
 
+		// Find all colliders the entity collides with, and put their IDs into a list which holds the id and the distance from the entity
+		using DistancePair = std::pair<EntityID, float>;
+		std::vector<DistancePair> pairs;
 		for (EntityID other : ecs.GetAllActiveIDs<BoxCollider>()) {
+
+			// Do not check collision against the entity itself
 			if (other == id)
 				continue;
 
-			if (ecs.HasComponent<Renderable>(id)) {
-				BoxCollider& colliderOther = ecs.GetComponent<BoxCollider>(other);
-				Renderable& renderable = ecs.GetComponent<Renderable>(id);
+			Transform& transformOther = ecs.GetComponent<Transform>(other);
+			BoxCollider& colliderOther = ecs.GetComponent<BoxCollider>(other);
 
-				if (Collision::CheckSimpleAABB(collider, colliderOther))
-					renderable.color = { 1, 0, 0 };
-				else
-					renderable.color = { 1, 1, 1 };
+			Collision::SweptInfo info = Collision::SweptAABB(collider, colliderOther, physics.velocity * deltaTime);
+			if (info.collided) {
+				float distance = glm::distance(transform.position, transformOther.position);
+				pairs.push_back({ other, distance });
+			}
+		}
+
+		// Sort the list based on distance, closest collision goes to the front of the list.
+		std::sort(pairs.begin(), pairs.end(), [](const auto& a, const auto& b) {
+			return a.second < b.second;
+		});
+
+		/* Resolve the collisions in order of distance to entity.
+		*  We have to resimulate collisions when doing this, since by resolving the closest one,
+		*  we may not encounter the other anymore.
+		*  - This feels like an applicable philosophy to problems in life in general no?
+		*/ 
+		for (auto& [other, dist] : pairs) {
+
+			BoxCollider& colliderOther = ecs.GetComponent<BoxCollider>(other);
+			Collision::SweptInfo info = Collision::SweptAABB(collider, colliderOther, physics.velocity * deltaTime);
+
+			if (info.collided) {
+
+				// Resolve by adding an opposing force to the velocity which repels us from entering solids.
+				// the opposing force has the polarity of the solid's collision normal.
+				float remainingTime = 1.0f - info.collisionTime;
+				glm::vec2 opposingForce = info.collisionNormal * glm::abs(physics.velocity) * remainingTime;
+				physics.velocity += opposingForce;
 			}
 		}
 	}

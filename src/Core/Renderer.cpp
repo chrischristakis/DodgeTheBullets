@@ -5,10 +5,12 @@
 
 // ----- HOISTS ------ //
 void InitQuadData(unsigned int& vbo, unsigned int& vao, unsigned int& ebo);
+void InitLineData(unsigned int& vbo, unsigned int& vao);
 
 // ----- IMPLEMENTATIONS ----- //
 Renderer::Renderer() {
 	InitQuadData(m_quadVBO, m_quadVAO, m_quadEBO);
+	InitLineData(m_lineVBO, m_lineVAO);
 }
 
 void Renderer::RenderQuad(Shader& shader, glm::vec2 position, glm::vec2 scale, glm::vec3 color) {
@@ -46,6 +48,31 @@ void Renderer::RenderQuadOutline(Shader& shader, glm::vec2 position, glm::vec2 s
 	glBindVertexArray(0);
 }
 
+void Renderer::RenderLine(Shader& shader, glm::vec2 start, glm::vec2 end, glm::vec3 color, float thickness) {
+	glBindBuffer(GL_ARRAY_BUFFER, m_lineVBO);
+
+	// Fill buffer with line data
+	float data[] = {
+		start.x, start.y,
+		end.x, end.y
+	};
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(data), data);
+
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.1f));
+	glm::mat4 mvp = Context::GetCamera()->GetProjectionMatrix() * model;
+
+	shader.Use();
+	shader.SetVec3f("color", color);
+	shader.SetMatrix4f("mvp", mvp);
+
+	glBindVertexArray(m_lineVAO);
+	glLineWidth(thickness);
+	glDrawArrays(GL_LINES, 0, 2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
 // Generates and stores quad data into references for VBO and VAO
 void InitQuadData(unsigned int& vbo, unsigned int& vao, unsigned int& ebo) {
 	glGenBuffers(1, &vbo);
@@ -78,4 +105,21 @@ void InitQuadData(unsigned int& vbo, unsigned int& vao, unsigned int& ebo) {
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void InitLineData(unsigned int& vbo, unsigned int& vao) {
+	glGenBuffers(1, &vbo);
+	glGenVertexArrays(1, &vao);
+
+	// Empty buffer to be during rendering later
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float), 0, GL_DYNAMIC_DRAW);
+
+	glBindVertexArray(vao);
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

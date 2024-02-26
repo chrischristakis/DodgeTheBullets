@@ -22,7 +22,7 @@ void Init() {
     Context::CreateWindow(new Window(1520, 885, "Dodge the bullets!!!"));
     InitGL();
     Context::CreateAudio(new Audio(32));
-    Context::CreateCamera(new Camera(2.0f, 16.0f/9.0f));
+    Context::CreateCamera(new Camera(3.0f, 16.0f/9.0f));
 
     // So camera syncs with window size
     Context::GetCamera()->OnResize(1520, 885);

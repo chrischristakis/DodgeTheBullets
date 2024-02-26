@@ -11,6 +11,7 @@ namespace Systems {
 	void RenderQuad(ECS& ecs, EntityID id, Renderer& renderer, Shader& shader);
 	void RenderBoxCollider(ECS& ecs, EntityID id, Renderer& renderer, Shader& shader);
 
-	void HandleSolidCollisions(ECS& ecs, EntityID id);
+	// Make sure to handle collisions before moving, as SweptAABB alters velocity for the next move!
+	void HandleSolidCollisions(ECS& ecs, EntityID id, float deltaTime);
 
 }

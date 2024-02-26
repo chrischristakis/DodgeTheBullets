@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include <iostream>
+#include <vector>
 #include <glm/glm.hpp>
 
 #include "Core/Audio.h"
@@ -9,7 +10,7 @@
 #include "Game/Systems.h"
 
 EntityID player;
-EntityID platform;
+std::vector<EntityID> platforms;
 
 Scene::Scene() {
 	m_quadShader = std::make_unique<Shader>("shaders/shader.vs", "shaders/shader.fs");
@@ -23,16 +24,19 @@ Scene::Scene() {
 	ecs.RegisterComponent<Physics>();
 
 	player = ecs.CreateEntity();
-	platform = ecs.CreateEntity();
+
+	for (int i = 0; i < 3; i++) {
+		EntityID platform = ecs.CreateEntity();
+		ecs.AddComponent<Transform>(platform, { glm::vec2(0, -1 + i) });
+		ecs.AddComponent<BoxCollider>(platform, { glm::vec2(0, -1 + i) });
+		ecs.AddComponent<Renderable>(platform, { glm::vec3(1, 0.1f, 1) });
+		platforms.push_back(platform);
+	}
 
 	ecs.AddComponent<Transform>(player);
 	ecs.AddComponent<Physics>(player);
 	ecs.AddComponent<BoxCollider>(player);
 	ecs.AddComponent<Renderable>(player, {glm::vec3(1, 1, 1)});
-
-	ecs.AddComponent<Transform>(platform, {glm::vec2(0, 0), glm::vec2(2.0f, 1.0f)});
-	ecs.AddComponent<BoxCollider>(platform, { glm::vec2(0, 0), glm::vec2(2.0f, 1.0f) });
-	ecs.AddComponent<Renderable>(platform, { glm::vec3(1, 0, 1) });
 }
 
 void Scene::Render() {
@@ -40,17 +44,16 @@ void Scene::Render() {
 	Renderer& renderer = *m_renderer.get();
 	Shader& quadShader = *m_quadShader.get();
 	
-	Systems::RenderQuad(ecs, platform, renderer, quadShader);
-	Systems::RenderQuad(ecs, player, renderer, quadShader);
+	for (EntityID platform : platforms)
+		Systems::RenderQuad(ecs, platform, renderer, quadShader);
 
-	Systems::RenderBoxCollider(ecs, platform, renderer, quadShader);
-	Systems::RenderBoxCollider(ecs, player, renderer, quadShader);
+	Systems::RenderQuad(ecs, player, renderer, quadShader);
 }
 
 void Scene::Update(float deltaTime) {
 	ECS& ecs = *m_ecs.get();
 
 	Systems::ProcessMovementInput(ecs, player, *Context::GetWindow());
+	Systems::HandleSolidCollisions(ecs, player, deltaTime);
 	Systems::Move(ecs, player, deltaTime);
-	Systems::HandleSolidCollisions(ecs, player);
 }
