@@ -16,6 +16,7 @@ Renderer::Renderer() {
 void Renderer::RenderQuad(Shader& shader, glm::vec2 position, glm::vec2 scale, glm::vec3 color) {
 
 	glm::mat4 model(1.0f);
+	model = glm::translate(model, glm::vec3(scale / 2.0f, 0.0f)); // so that quads have an origin of their top left and not center
 	model = glm::translate(model, glm::vec3(position, -0.1f));
 	model = glm::scale(model, glm::vec3(scale, 1.0f));
 
@@ -33,6 +34,7 @@ void Renderer::RenderQuad(Shader& shader, glm::vec2 position, glm::vec2 scale, g
 void Renderer::RenderQuadOutline(Shader& shader, glm::vec2 position, glm::vec2 scale, glm::vec3 color, float thickness) {
 
 	glm::mat4 model(1.0f);
+	model = glm::translate(model, glm::vec3(scale/2.0f, 0.0f)); // so that quads have an origin of their top left and not center
 	model = glm::translate(model, glm::vec3(position, -0.1f));
 	model = glm::scale(model, glm::vec3(scale, 1.0f));
 

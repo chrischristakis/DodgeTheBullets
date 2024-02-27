@@ -48,7 +48,7 @@ namespace Systems {
 	void RenderBoxCollider(ECS& ecs, EntityID id, Renderer& renderer, Shader& shader) {
 		BoxCollider& collider = ecs.GetComponent<BoxCollider>(id);
 
-		renderer.RenderQuadOutline(shader, collider.position, collider.scale, { 0, 1, 1 }, 2.0f);
+		renderer.RenderQuadOutline(shader, collider.position, collider.size, { 0, 1, 1 }, 2.0f);
 	}
 
 	void HandleSolidCollisions(ECS& ecs, EntityID id, float deltaTime) {
@@ -67,6 +67,11 @@ namespace Systems {
 
 			Transform& transformOther = ecs.GetComponent<Transform>(other);
 			BoxCollider& colliderOther = ecs.GetComponent<BoxCollider>(other);
+
+			// Do a broadphase check to see if we can avoid the more expansive swept check
+			BoxCollider broadphase = Collision::CalculateBroadphase(collider, physics.velocity);
+			if (!Collision::CheckSimpleAABB(broadphase, colliderOther))
+				continue;
 
 			Collision::SweptInfo info = Collision::SweptAABB(collider, colliderOther, physics.velocity * deltaTime);
 			if (info.collided) {

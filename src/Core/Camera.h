@@ -5,7 +5,7 @@
 class Camera {
 public:
 
-	Camera(float zoom, float targetAspect);
+	Camera(float zoom, float targetAspect, float windowWidth, float windowHeight);
 
 	glm::mat4 GetProjectionMatrix();
 

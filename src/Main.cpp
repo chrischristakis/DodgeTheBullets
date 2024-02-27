@@ -19,13 +19,10 @@ void InitGL() {
 }
 
 void Init() {
-    Context::CreateWindow(new Window(1520, 885, "Dodge the bullets!!!"));
+    Context::CreateWindow(new Window(1920, 1080, "Dodge the bullets!!!"));
     InitGL();
     Context::CreateAudio(new Audio(32));
-    Context::CreateCamera(new Camera(3.0f, 16.0f/9.0f));
-
-    // So camera syncs with window size
-    Context::GetCamera()->OnResize(1520, 885);
+    Context::CreateCamera(new Camera(5.0f, 16.0f/9.0f, 1920, 1080));
 
     scene = new Scene();  // not sure how I feel about this being a global, but needs to be to use in resize callback.
 

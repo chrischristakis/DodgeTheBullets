@@ -32,8 +32,8 @@ struct Renderable : public Component {
 
 struct BoxCollider : public Component {
 	glm::vec2 position;
-	glm::vec2 scale;
+	glm::vec2 size;
 
-	BoxCollider(glm::vec2 position = { 0, 0 }, glm::vec2 scale = { 1, 1 }) :
-		position(position), scale(scale) { }
+	BoxCollider(glm::vec2 position = { 0, 0 }, glm::vec2 size = { 1, 1 }) :
+		position(position), size(size) { }
 };

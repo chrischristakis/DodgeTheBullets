@@ -6,13 +6,11 @@
 namespace Collision {
 
 	bool CheckSimpleAABB(BoxCollider& a, BoxCollider& b) {
-		glm::vec2 halfScaleA = a.scale / 2.0f;
-		glm::vec2 halfScaleB = b.scale / 2.0f;
 		return (
-			(a.position.x + halfScaleA.x) > (b.position.x - halfScaleB.x) &&
-			(a.position.x - halfScaleA.x) < (b.position.x + halfScaleB.x) &&
-			(a.position.y + halfScaleA.y) > (b.position.y - halfScaleB.y) &&
-			(a.position.y - halfScaleA.y) < (b.position.y + halfScaleB.y)
+			(a.position.x + a.size.x) > b.position.x &&
+			a.position.x < (b.position.x + b.size.x) &&
+			(a.position.y + a.size.y) > b.position.y &&
+			a.position.y < (b.position.y + b.size.y)
 		);
 	}
 	
@@ -25,45 +23,42 @@ namespace Collision {
 			return info;
 		}
 
-		glm::vec2 halfScaleMoving = moving.scale / 2.0f;
-		glm::vec2 halfScaleFixed = fixed.scale / 2.0f;
-
 		// Calculate distance on each axis to entry collision point and exit collision point from moving to fixed.
 		// Note that this depends on the direction of the velocity on each axis.
 		float entryDistanceX, entryDistanceY;
 		float exitDistanceX, exitDistanceY;
 
 		if (velocity.x > 0.0f) {
-			entryDistanceX = (fixed.position.x - halfScaleFixed.x) - (moving.position.x + halfScaleMoving.x);
-			exitDistanceX =  (fixed.position.x + halfScaleFixed.x) - (moving.position.x - halfScaleMoving.x);
+			entryDistanceX = fixed.position.x - (moving.position.x + moving.size.x);
+			exitDistanceX = (fixed.position.x + fixed.size.x) - moving.position.x;
 		}
 		else if (velocity.x < 0.0f) {
 			// Note this produces a negative result. This is intentional, since once we divide by a negative velocity later,
 			// we will result in a positive time.
-			entryDistanceX = (fixed.position.x + halfScaleFixed.x) - (moving.position.x - halfScaleMoving.x);
-			exitDistanceX =  (fixed.position.x - halfScaleFixed.x) - (moving.position.x + halfScaleMoving.x);
+			entryDistanceX = (fixed.position.x + fixed.size.x) - moving.position.x;
+			exitDistanceX =  fixed.position.x - (moving.position.x + moving.size.x);
 		}
 		else {
 			// If the box is stationary in X and only moving in Y, if the x axis of the moving box
 			// does not intersect witht he x axis of the fixed box, then no collision will occur.
-			if ((moving.position.x + halfScaleMoving.x) <= (fixed.position.x - halfScaleFixed.x) ||
-				(moving.position.x - halfScaleMoving.x) >= (fixed.position.x + halfScaleFixed.x)) {
+			if (moving.position.x + moving.size.x <= fixed.position.x ||
+				moving.position.x >= fixed.position.x + fixed.size.x) {
 				info.collided = false;
 				return info;
 			}
 		}
 
 		if (velocity.y > 0.0f) {
-			entryDistanceY = (fixed.position.y - halfScaleFixed.y) - (moving.position.y + halfScaleMoving.y);
-			exitDistanceY = (fixed.position.y + halfScaleFixed.y) - (moving.position.y - halfScaleMoving.y);
+			entryDistanceY = fixed.position.y - (moving.position.y + moving.size.y);
+			exitDistanceY = (fixed.position.y + fixed.size.y) - moving.position.y;
 		}
 		else if (velocity.y < 0.0f) {
-			entryDistanceY = (fixed.position.y + halfScaleFixed.y) - (moving.position.y - halfScaleMoving.y);
-			exitDistanceY = (fixed.position.y - halfScaleFixed.y) - (moving.position.y + halfScaleMoving.y);
+			entryDistanceY = (fixed.position.y + fixed.size.y) - moving.position.y;
+			exitDistanceY = fixed.position.y - (moving.position.y + moving.size.y);
 		}
 		else {
-			if ((moving.position.y + halfScaleMoving.y) <= (fixed.position.y - halfScaleFixed.y) ||
-				(moving.position.y - halfScaleMoving.y) >= (fixed.position.y + halfScaleFixed.y)) {
+			if (moving.position.y + moving.size.y <= fixed.position.y ||
+				moving.position.y >= fixed.position.y + fixed.size.y) {
 				info.collided = false;
 				return info;
 			}
@@ -124,6 +119,30 @@ namespace Collision {
 		}
 
 		return info;
+	}
+
+	BoxCollider CalculateBroadphase(BoxCollider& moving, glm::vec2 velocity) {
+		BoxCollider collider;
+
+		if (velocity.x > 0.0f) {
+			collider.position.x = moving.position.x;
+			collider.size.x = moving.size.x + velocity.x;
+		}
+		else {
+			collider.position.x = moving.position.x - glm::abs(velocity.x);
+			collider.size.x = glm::abs(velocity.x) + moving.size.x;
+		}
+
+		if (velocity.y > 0.0f) {
+			collider.position.y = moving.position.y;
+			collider.size.y = moving.size.y + velocity.y;
+		}
+		else {
+			collider.position.y = moving.position.y - glm::abs(velocity.y);
+			collider.size.y = glm::abs(velocity.y) + moving.size.y;
+		}
+
+		return collider;
 	}
 
 }

@@ -9,6 +9,8 @@
 #include "Components/Component.h"
 #include "Game/Systems.h"
 
+#include "Game/CollisionUtil.h"
+
 EntityID player;
 std::vector<EntityID> platforms;
 
@@ -27,9 +29,9 @@ Scene::Scene() {
 
 	for (int i = 0; i < 3; i++) {
 		EntityID platform = ecs.CreateEntity();
-		ecs.AddComponent<Transform>(platform, { glm::vec2(0, -1 + i) });
-		ecs.AddComponent<BoxCollider>(platform, { glm::vec2(0, -1 + i) });
-		ecs.AddComponent<Renderable>(platform, { glm::vec3(1, 0.1f, 1) });
+		ecs.AddComponent<Transform>(platform, { glm::vec2(0, i) });
+		ecs.AddComponent<BoxCollider>(platform, { glm::vec2(0, i) });
+		ecs.AddComponent<Renderable>(platform, { glm::vec3(1, 0, 1) });
 		platforms.push_back(platform);
 	}
 

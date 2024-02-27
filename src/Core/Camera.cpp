@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <algorithm>
 
-Camera::Camera(float zoom, float targetAspect): m_targetAspect(targetAspect), m_zoom(zoom) {
+Camera::Camera(float zoom, float targetAspect, float windowWidth, float windowHeight): m_targetAspect(targetAspect), m_zoom(zoom) {
 	m_projection = glm::ortho(
 		-zoom * targetAspect,
 		zoom * targetAspect,
@@ -13,12 +13,17 @@ Camera::Camera(float zoom, float targetAspect): m_targetAspect(targetAspect), m_
 		0.1f,
 		100.0f
 	);
+
+	OnResize(windowWidth, windowHeight);
 }
 
 glm::mat4 Camera::GetProjectionMatrix() {
 	return m_projection;
 }
 
+/*! Changes projection matrix to zoom camera in or out, showing more of the game world
+*	@param zoom: the higher the value, the more of the game world you see.
+*/
 void Camera::SetZoom(float zoom) {
 	m_zoom = std::max(zoom, 0.01f);
 
@@ -32,6 +37,10 @@ void Camera::SetZoom(float zoom) {
 	);
 }
 
+/*! Resizes the viewport to fit the window dimensions and adds letterboxing
+*	@param width: Width of window after resize
+*   @param height: Height of window after resize
+*/
 void Camera::OnResize(int width, int height) {
 	float aspect = (float)width / (float)height;
 
