@@ -7,7 +7,7 @@ namespace Systems {
 	
 	void Move(ECS& ecs, EntityID id, float deltaTime);
 	void ProcessMovementInput(ECS& ecs, EntityID id, Window& window, float deltaTime);
-	void ApplyPhysics(ECS& ecs, EntityID id, float deltaTime);
+	void ApplyForces(ECS& ecs, EntityID id, float deltaTime);
 
 	void RenderQuad(ECS& ecs, EntityID id, Renderer& renderer, Shader& shader);
 	void RenderBoxCollider(ECS& ecs, EntityID id, Renderer& renderer, Shader& shader);

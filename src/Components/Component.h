@@ -13,10 +13,10 @@ struct Component {
 struct Physics : public Component {
 	glm::vec2 velocity;
 	glm::vec2 acceleration;
-	glm::vec2 drag;
+	glm::vec2 drag;  // Drag is friction
 	float gravity;
 
-	Physics(glm::vec2 velocity = { 0, 0 }, glm::vec2 acceleration = {0, 0}, glm::vec2 drag = {0, 0}, float gravity = 15.0f) :
+	Physics(glm::vec2 velocity = { 0, 0 }, glm::vec2 acceleration = {0, 0}, glm::vec2 drag = {1.0f, 1.0f}, float gravity = 32.0f) :
 		velocity(velocity), acceleration(acceleration), drag(drag), gravity(gravity) { }
 };
 
@@ -39,4 +39,12 @@ struct BoxCollider : public Component {
 
 	BoxCollider(glm::vec2 position = { 0, 0 }, glm::vec2 size = { 1, 1 }) :
 		position(position), size(size) { }
+};
+
+struct JumpComponent : public Component {
+	bool jumping;
+	bool grounded;
+
+	JumpComponent(bool jumping = false, bool grounded = false):
+		jumping(jumping), grounded(grounded) { }
 };

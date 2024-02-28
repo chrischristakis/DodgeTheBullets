@@ -4,7 +4,9 @@
 #include <glad/glad.h>
 #include <algorithm>
 
-Camera::Camera(float zoom, float targetAspect, float windowWidth, float windowHeight): m_targetAspect(targetAspect), m_zoom(zoom) {
+Camera::Camera(float zoom, float targetAspect, float windowWidth, float windowHeight) :
+	m_targetAspect(targetAspect), m_zoom(zoom), m_position(0, 0)
+{
 	m_projection = glm::ortho(
 		-zoom * targetAspect,
 		zoom * targetAspect,
@@ -17,8 +19,14 @@ Camera::Camera(float zoom, float targetAspect, float windowWidth, float windowHe
 	OnResize(windowWidth, windowHeight);
 }
 
-glm::mat4 Camera::GetProjectionMatrix() {
-	return m_projection;
+glm::mat4 Camera::GetViewProjectionMatrix() {
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-m_position, 0.0f));
+
+	return m_projection * view;
+}
+
+void Camera::Move(float dx, float dy) {
+	m_position += glm::vec2(dx, dy);
 }
 
 /*! Changes projection matrix to zoom camera in or out, showing more of the game world

@@ -20,7 +20,7 @@ void Renderer::RenderQuad(Shader& shader, glm::vec2 position, glm::vec2 scale, g
 	model = glm::translate(model, glm::vec3(position, -0.1f));
 	model = glm::scale(model, glm::vec3(scale, 1.0f));
 
-	glm::mat4 mvp = Context::GetCamera()->GetProjectionMatrix() * model;
+	glm::mat4 mvp = Context::GetCamera()->GetViewProjectionMatrix() * model;
 
 	shader.Use();
 	shader.SetVec3f("color", color);
@@ -38,7 +38,7 @@ void Renderer::RenderQuadOutline(Shader& shader, glm::vec2 position, glm::vec2 s
 	model = glm::translate(model, glm::vec3(position, -0.1f));
 	model = glm::scale(model, glm::vec3(scale, 1.0f));
 
-	glm::mat4 mvp = Context::GetCamera()->GetProjectionMatrix() * model;
+	glm::mat4 mvp = Context::GetCamera()->GetViewProjectionMatrix() * model;
 
 	shader.Use();
 	shader.SetVec3f("color", color);
@@ -61,7 +61,7 @@ void Renderer::RenderLine(Shader& shader, glm::vec2 start, glm::vec2 end, glm::v
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(data), data);
 
 	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.1f));
-	glm::mat4 mvp = Context::GetCamera()->GetProjectionMatrix() * model;
+	glm::mat4 mvp = Context::GetCamera()->GetViewProjectionMatrix() * model;
 
 	shader.Use();
 	shader.SetVec3f("color", color);

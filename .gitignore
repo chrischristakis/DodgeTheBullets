@@ -1,6 +1,5 @@
 .vs/
-bin/intermediates/
-bin/x64/Debug
+bin/
 *.sln
 *.vcxproj
 *.vcxproj.*

@@ -4,6 +4,7 @@
 #include <vector>
 #include "CollisionUtil.h"
 #include "../Components/Component.h"
+#include "../Context.h"
 
 namespace Systems {
 
@@ -21,7 +22,7 @@ namespace Systems {
 		}
 	}
 
-	void ApplyPhysics(ECS& ecs, EntityID id, float deltaTime) {
+	void ApplyForces(ECS& ecs, EntityID id, float deltaTime) {
 		Physics& physics = ecs.GetComponent<Physics>(id);
 
 		physics.velocity.x *= pow(physics.drag.x, deltaTime);
@@ -31,21 +32,26 @@ namespace Systems {
 
 	void ProcessMovementInput(ECS& ecs, EntityID id, Window& window, float deltaTime) {
 		Physics& physics = ecs.GetComponent<Physics>(id);
-		
-		glm::vec2 resultant(0, 0);
+		JumpComponent& jumpComponent = ecs.GetComponent<JumpComponent>(id);
+
+		glm::vec2 speed(0, 0);
+		const float SPEED = 4.0f;
 
 		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_A) == GLFW_PRESS)
-			resultant.x += -physics.acceleration.x * deltaTime;
+			speed.x = -SPEED;
 		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_D) == GLFW_PRESS)
-			resultant.x +=  physics.acceleration.x * deltaTime;
-		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_SPACE) == GLFW_PRESS)
-			resultant.y = -4.0f;
-		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_W) == GLFW_PRESS)
-			resultant.y += -physics.acceleration.y * deltaTime;
-		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_S) == GLFW_PRESS)
-			resultant.y +=  physics.acceleration.y * deltaTime;
+			speed.x = SPEED;
 
-		physics.velocity += resultant;
+		// Jumping
+		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_SPACE) == GLFW_PRESS) {
+			if (!jumpComponent.jumping && jumpComponent.grounded) {
+				jumpComponent.jumping = true;
+				jumpComponent.grounded = false;
+				physics.velocity.y = -15.0f;
+			}
+		}
+
+		physics.velocity.x = speed.x;
 	}
 
 	void RenderQuad(ECS& ecs, EntityID id, Renderer& renderer, Shader& shader) {
@@ -65,6 +71,12 @@ namespace Systems {
 		Transform& transform = ecs.GetComponent<Transform>(id);
 		BoxCollider& collider = ecs.GetComponent<BoxCollider>(id);
 		Physics& physics = ecs.GetComponent<Physics>(id);
+
+		// Start by assuming we're not grounded, and set it to true if we do collide with the top edge of something
+		if (ecs.HasComponent<JumpComponent>(id)) {
+			JumpComponent& jumpComponent = ecs.GetComponent<JumpComponent>(id);
+			jumpComponent.grounded = false;
+		}
 
 		// Find all colliders the entity collides with, and put their IDs into a list which holds the id and the distance from the entity
 		using DistancePair = std::pair<EntityID, float>;
@@ -112,6 +124,14 @@ namespace Systems {
 				float remainingTime = 1.0f - info.collisionTime;
 				glm::vec2 opposingForce = info.collisionNormal * glm::abs(physics.velocity) * remainingTime;
 				physics.velocity += opposingForce;
+
+				// If entity has a jump component, then notify we are grounded if we collide with the top edge of a box.
+				if (info.collisionNormal == glm::vec2(0, -1) && ecs.HasComponent<JumpComponent>(id)) {
+					JumpComponent& jumpComponent = ecs.GetComponent<JumpComponent>(id);
+
+					jumpComponent.grounded = true;
+					jumpComponent.jumping = false;
+				}
 			}
 		}
 	}
