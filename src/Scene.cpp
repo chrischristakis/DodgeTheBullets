@@ -27,18 +27,22 @@ Scene::Scene() {
 
 	player = ecs.CreateEntity();
 
-	for (int i = 0; i < 3; i++) {
-		EntityID platform = ecs.CreateEntity();
-		ecs.AddComponent<Transform>(platform, { glm::vec2(0, i) });
-		ecs.AddComponent<BoxCollider>(platform, { glm::vec2(0, i) });
-		ecs.AddComponent<Renderable>(platform, { glm::vec3(1, 0, 1) });
-		platforms.push_back(platform);
-	}
+	EntityID platform = ecs.CreateEntity();
+	ecs.AddComponent<Transform>(platform, { glm::vec2(0, 2), glm::vec2(3, 1) });
+	ecs.AddComponent<BoxCollider>(platform, { glm::vec2(0, 2), glm::vec2(3, 1) });
+	ecs.AddComponent<Renderable>(platform, { glm::vec3(1, 1, 1) });
+	platforms.push_back(platform);
+
+	platform = ecs.CreateEntity();
+	ecs.AddComponent<Transform>(platform, { glm::vec2(-9, -1), glm::vec2(6.5f, 0.1f) });
+	ecs.AddComponent<BoxCollider>(platform, { glm::vec2(-9, -1), glm::vec2(6.5f, 0.1f) });
+	ecs.AddComponent<Renderable>(platform, { glm::vec3(1, 1, 1) });
+	platforms.push_back(platform);
 
 	ecs.AddComponent<Transform>(player);
-	ecs.AddComponent<Physics>(player);
+	ecs.AddComponent<Physics>(player, {{0, 0}, {50.0f, 50.0f}, {0.1f, 1.0f}});
 	ecs.AddComponent<BoxCollider>(player);
-	ecs.AddComponent<Renderable>(player, {glm::vec3(1, 1, 1)});
+	ecs.AddComponent<Renderable>(player, {glm::vec3(1, 1, 0)});
 }
 
 void Scene::Render() {
@@ -50,12 +54,15 @@ void Scene::Render() {
 		Systems::RenderQuad(ecs, platform, renderer, quadShader);
 
 	Systems::RenderQuad(ecs, player, renderer, quadShader);
+
+	Systems::RenderAxis(renderer, quadShader);
 }
 
 void Scene::Update(float deltaTime) {
 	ECS& ecs = *m_ecs.get();
 
-	Systems::ProcessMovementInput(ecs, player, *Context::GetWindow());
+	Systems::ProcessMovementInput(ecs, player, *Context::GetWindow(), deltaTime);
+	Systems::ApplyPhysics(ecs, player, deltaTime);
 	Systems::HandleSolidCollisions(ecs, player, deltaTime);
 	Systems::Move(ecs, player, deltaTime);
 }

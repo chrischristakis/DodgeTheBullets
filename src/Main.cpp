@@ -44,26 +44,41 @@ int main()
     Init();
 
     // Game loop
-    float deltaTime = 0.0f; // in seconds
+    bool limitFps = false;
+    constexpr float ticksPerSecond = 60.0f;
+    constexpr float frameLimit = 10.0f;
+    float fpsLimitDelay = 1 / frameLimit;
+    float secondsPerTick = 1 / ticksPerSecond;
+    float deltaTime = 0.0f;
     float last = 0.0f;
+    float accumulator = 0.0f; // in seconds
     while (Context::GetWindow()->IsOpen())
     {
-        glfwPollEvents();
-        glClear(GL_COLOR_BUFFER_BIT);
-
         // Escape to exit window
+        glfwPollEvents();
         if (glfwGetKey(Context::GetWindow()->GetNativeWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
             Context::GetWindow()->Close();
 
-        // Update delta time
         float now = glfwGetTime();
+
+        // Allows us to simulate low fps
+        if (limitFps && (now - last) < fpsLimitDelay)
+            continue;
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Update delta time
         deltaTime = now - last;
+        accumulator += deltaTime;
         last = now;
 
-        // Core updates
-        Context::GetAudio()->Update();
+        // Core updates (Fixed timstep)
+        while (accumulator >= secondsPerTick) {
+            Context::GetAudio()->Update();
 
-        scene->Update(deltaTime);
+            scene->Update(secondsPerTick);
+            accumulator -= secondsPerTick;
+        }
         scene->Render();
 
         glfwSwapBuffers(Context::GetWindow()->GetNativeWindow());

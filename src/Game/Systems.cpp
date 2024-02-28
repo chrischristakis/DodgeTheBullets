@@ -2,8 +2,8 @@
 
 #include <glm/glm.hpp>
 #include <vector>
-#include "../Components/Component.h"
 #include "CollisionUtil.h"
+#include "../Components/Component.h"
 
 namespace Systems {
 
@@ -21,21 +21,31 @@ namespace Systems {
 		}
 	}
 
-	void ProcessMovementInput(ECS& ecs, EntityID id, Window& window) {
+	void ApplyPhysics(ECS& ecs, EntityID id, float deltaTime) {
 		Physics& physics = ecs.GetComponent<Physics>(id);
+
+		physics.velocity.x *= pow(physics.drag.x, deltaTime);
+		physics.velocity.y *= pow(physics.drag.y, deltaTime);
+		physics.velocity.y += physics.gravity * deltaTime;
+	}
+
+	void ProcessMovementInput(ECS& ecs, EntityID id, Window& window, float deltaTime) {
+		Physics& physics = ecs.GetComponent<Physics>(id);
+		
 		glm::vec2 resultant(0, 0);
-		constexpr float SPEED = 3.0f;
 
 		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_A) == GLFW_PRESS)
-			resultant.x += -SPEED;
+			resultant.x += -physics.acceleration.x * deltaTime;
 		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_D) == GLFW_PRESS)
-			resultant.x +=  SPEED;
+			resultant.x +=  physics.acceleration.x * deltaTime;
+		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_SPACE) == GLFW_PRESS)
+			resultant.y = -4.0f;
 		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_W) == GLFW_PRESS)
-			resultant.y += -SPEED;
+			resultant.y += -physics.acceleration.y * deltaTime;
 		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_S) == GLFW_PRESS)
-			resultant.y +=  SPEED;
+			resultant.y +=  physics.acceleration.y * deltaTime;
 
-		physics.velocity = resultant;
+		physics.velocity += resultant;
 	}
 
 	void RenderQuad(ECS& ecs, EntityID id, Renderer& renderer, Shader& shader) {
@@ -104,6 +114,11 @@ namespace Systems {
 				physics.velocity += opposingForce;
 			}
 		}
+	}
+
+	void RenderAxis(Renderer& renderer, Shader& shader) {
+		renderer.RenderLine(shader, { 0, 0 }, { 1, 0 }, { 1, 0, 0 }, 4.0f);
+		renderer.RenderLine(shader, { 0, 0 }, { 0, 1 }, { 0, 1, 0 }, 4.0f);
 	}
 
 }

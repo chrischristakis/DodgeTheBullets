@@ -12,9 +12,12 @@ struct Component {
 
 struct Physics : public Component {
 	glm::vec2 velocity;
+	glm::vec2 acceleration;
+	glm::vec2 drag;
+	float gravity;
 
-	Physics(glm::vec2 velocity = { 0, 0 }) :
-		velocity(velocity) { }
+	Physics(glm::vec2 velocity = { 0, 0 }, glm::vec2 acceleration = {0, 0}, glm::vec2 drag = {0, 0}, float gravity = 15.0f) :
+		velocity(velocity), acceleration(acceleration), drag(drag), gravity(gravity) { }
 };
 
 struct Transform : public Component {
