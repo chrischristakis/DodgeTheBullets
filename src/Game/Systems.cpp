@@ -47,7 +47,7 @@ namespace Systems {
 			if (!jumpComponent.jumping && jumpComponent.grounded) {
 				jumpComponent.jumping = true;
 				jumpComponent.grounded = false;
-				physics.velocity.y = -15.0f;
+				physics.velocity.y = -11.0f;
 			}
 		}
 
@@ -139,6 +139,23 @@ namespace Systems {
 	void RenderAxis(Renderer& renderer, Shader& shader) {
 		renderer.RenderLine(shader, { 0, 0 }, { 1, 0 }, { 1, 0, 0 }, 4.0f);
 		renderer.RenderLine(shader, { 0, 0 }, { 0, 1 }, { 0, 1, 0 }, 4.0f);
+	}
+
+	void HandlePlayerPassesDeathwall(ECS& ecs, EntityID player, EntityID wall) {
+		Transform& playerTransform = ecs.GetComponent<Transform>(player);
+		Transform& wallTransform = ecs.GetComponent<Transform>(wall);
+
+		float leeway = playerTransform.scale.x;
+
+		// if player falls behind the deathwall, then end the game.
+		if ((playerTransform.position.x + leeway) < (wallTransform.position.x + wallTransform.scale.x)) {
+			
+		}
+	}
+
+	void MoveCameraWithDeathwall(ECS& ecs, Camera& camera, EntityID wall, float deltaTime) {
+		Physics& physics = ecs.GetComponent<Physics>(wall);
+		camera.Move(physics.velocity.x * deltaTime, physics.velocity.y * deltaTime);
 	}
 
 }

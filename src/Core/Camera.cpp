@@ -45,6 +45,10 @@ void Camera::SetZoom(float zoom) {
 	);
 }
 
+float Camera::GetZoom() {
+	return m_zoom;
+}
+
 /*! Resizes the viewport to fit the window dimensions and adds letterboxing
 *	@param width: Width of window after resize
 *   @param height: Height of window after resize
@@ -64,4 +68,12 @@ void Camera::OnResize(int width, int height) {
 		float offsetY = (height - scaledHeight) / 2.0f;
 		glViewport(0, offsetY, width, scaledHeight);
 	}
+}
+
+float Camera::GetHalfWidth() {
+	return m_zoom * m_targetAspect;
+}
+
+float Camera::GetHalfHeight() {
+	return m_zoom;
 }

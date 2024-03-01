@@ -15,6 +15,9 @@ namespace Systems {
 	// Make sure to handle collisions before moving, as SweptAABB alters velocity for the next move!
 	void HandleSolidCollisions(ECS& ecs, EntityID id, float deltaTime);
 
+	void HandlePlayerPassesDeathwall(ECS& ecs, EntityID player, EntityID wall);
+	void MoveCameraWithDeathwall(ECS& ecs, Camera& camera, EntityID wall, float deltaTime);
+
 	void RenderAxis(Renderer& renderer, Shader& shader);
 
 }

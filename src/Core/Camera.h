@@ -13,6 +13,10 @@ public:
 	void OnResize(int width, int height);
 
 	void SetZoom(float zoom);
+	float GetZoom();
+
+	float GetHalfWidth();
+	float GetHalfHeight();
 
 	void Move(float dx, float dy);
 

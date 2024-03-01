@@ -8,7 +8,7 @@
 #include "Game/Systems.h"
 #include "Game/EntityFactory.h"
 
-EntityID player;
+EntityID player, deathwall;
 std::vector<EntityID> platforms;
 
 Scene::Scene() {
@@ -25,6 +25,8 @@ Scene::Scene() {
 	player = CreatePlayer(ecs, { 0, 0 }, { 1, 1 });
 	platforms.push_back(CreatePlatform(ecs, {0, 1}, {1, 1}));
 	platforms.push_back(CreatePlatform(ecs, {2, 1}, {2, 1}));
+
+	deathwall = CreateDeathWall(ecs, 5.0f);
 }
 
 void Scene::Render() {
@@ -36,14 +38,20 @@ void Scene::Render() {
 		Systems::RenderQuad(ecs, platform, renderer, quadShader);
 
 	Systems::RenderQuad(ecs, player, renderer, quadShader);
+	Systems::RenderQuad(ecs, deathwall, renderer, quadShader);
 }
 
 void Scene::Update(float deltaTime) {
 	ECS& ecs = *m_ecs.get();
 
+	// PLAYER
 	Systems::ProcessMovementInput(ecs, player, *Context::GetWindow(), deltaTime);
 	Systems::ApplyForces(ecs, player, deltaTime);
 	Systems::HandleSolidCollisions(ecs, player, deltaTime);
 	Systems::Move(ecs, player, deltaTime);
 
+	// DEATH WALL
+	Systems::Move(ecs, deathwall, deltaTime);
+	Systems::HandlePlayerPassesDeathwall(ecs, player, deathwall);
+	Systems::MoveCameraWithDeathwall(ecs, *Context::GetCamera(), deathwall, deltaTime);
 }
