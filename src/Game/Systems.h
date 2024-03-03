@@ -2,6 +2,7 @@
 
 #include "../ECS.h"
 #include "../Core/Common.h"
+#include "PlatformFactory.h"
 
 namespace Systems {
 	
@@ -16,7 +17,10 @@ namespace Systems {
 	void HandleSolidCollisions(ECS& ecs, EntityID id, float deltaTime);
 
 	void HandlePlayerPassesDeathwall(ECS& ecs, EntityID player, EntityID wall);
+	void HandleScreenBounds(ECS& ecs, EntityID player, Camera& camera);
 	void MoveCameraWithDeathwall(ECS& ecs, Camera& camera, EntityID wall, float deltaTime);
+
+	void PollRespawnPlatform(ECS& ecs, PlatformFactory& factory, Camera& camera, EntityID platform, EntityID deathwall);
 
 	void RenderAxis(Renderer& renderer, Shader& shader);
 

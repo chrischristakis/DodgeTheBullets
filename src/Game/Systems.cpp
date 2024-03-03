@@ -35,7 +35,7 @@ namespace Systems {
 		JumpComponent& jumpComponent = ecs.GetComponent<JumpComponent>(id);
 
 		glm::vec2 speed(0, 0);
-		const float SPEED = 4.0f;
+		const float SPEED = 9.0f;
 
 		if (glfwGetKey(window.GetNativeWindow(), GLFW_KEY_A) == GLFW_PRESS)
 			speed.x = -SPEED;
@@ -47,7 +47,7 @@ namespace Systems {
 			if (!jumpComponent.jumping && jumpComponent.grounded) {
 				jumpComponent.jumping = true;
 				jumpComponent.grounded = false;
-				physics.velocity.y = -11.0f;
+				physics.velocity.y = -16.0f;
 			}
 		}
 
@@ -136,6 +136,21 @@ namespace Systems {
 		}
 	}
 
+	void HandleScreenBounds(ECS& ecs, EntityID player, Camera& camera) {
+		Transform& transform = ecs.GetComponent<Transform>(player);
+		BoxCollider& collider = ecs.GetComponent<BoxCollider>(player);
+		Physics& physics = ecs.GetComponent<Physics>(player);
+
+		float screenRightEdge = camera.GetPosition().x + camera.GetHalfWidth();
+
+		// Clamp the player to the right edge of the screen
+		if ((transform.position.x + transform.scale.x) >= screenRightEdge) {
+			transform.position.x = screenRightEdge - transform.scale.x;
+			collider.position.x = screenRightEdge - transform.scale.x;
+			physics.velocity.x = 0.0f;
+		}
+	}
+
 	void RenderAxis(Renderer& renderer, Shader& shader) {
 		renderer.RenderLine(shader, { 0, 0 }, { 1, 0 }, { 1, 0, 0 }, 4.0f);
 		renderer.RenderLine(shader, { 0, 0 }, { 0, 1 }, { 0, 1, 0 }, 4.0f);
@@ -156,6 +171,19 @@ namespace Systems {
 	void MoveCameraWithDeathwall(ECS& ecs, Camera& camera, EntityID wall, float deltaTime) {
 		Physics& physics = ecs.GetComponent<Physics>(wall);
 		camera.Move(physics.velocity.x * deltaTime, physics.velocity.y * deltaTime);
+	}
+
+	void PollRespawnPlatform(ECS& ecs, PlatformFactory& factory, Camera& camera, EntityID platform, EntityID deathwall) {
+		Transform& platformTransform = ecs.GetComponent<Transform>(platform);
+		Transform& wallTransform = ecs.GetComponent<Transform>(deathwall);
+
+		// If the platform breaches the deathwall, then we reset it to a random y value at the edge of the screen.
+		if ((platformTransform.position.x + platformTransform.scale.x) < (wallTransform.position.x + wallTransform.scale.x)) {
+			BoxCollider& platformCollider = ecs.GetComponent<BoxCollider>(platform);
+
+			platformTransform.position.x = camera.GetPosition().x + camera.GetHalfWidth();
+			platformCollider.position.x = camera.GetPosition().x + camera.GetHalfWidth();
+		}
 	}
 
 }

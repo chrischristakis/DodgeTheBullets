@@ -17,6 +17,7 @@ public:
 
 	float GetHalfWidth();
 	float GetHalfHeight();
+	glm::vec2 GetPosition();
 
 	void Move(float dx, float dy);
 

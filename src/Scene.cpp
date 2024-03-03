@@ -15,6 +15,7 @@ Scene::Scene() {
 	m_quadShader = std::make_unique<Shader>("shaders/shader.vs", "shaders/shader.fs");
 	m_renderer = std::make_unique<Renderer>();
 	m_ecs = std::make_unique<ECS>(100);
+	m_platformFactory = std::make_unique<PlatformFactory>(3.0f, 0.25f);
 
 	ECS& ecs = *m_ecs.get();
 
@@ -22,11 +23,12 @@ Scene::Scene() {
 	ecs.RegisterComponent<Transform>();
 	ecs.RegisterComponent<Physics>();
 
-	player = CreatePlayer(ecs, { 0, 0 }, { 1, 1 });
-	platforms.push_back(CreatePlatform(ecs, {0, 1}, {1, 1}));
-	platforms.push_back(CreatePlatform(ecs, {2, 1}, {2, 1}));
+	float deathWallWidth = 5.0f;
 
-	deathwall = CreateDeathWall(ecs, 5.0f);
+	player = CreatePlayer(ecs, { 0, -5 }, { 1, 1 });
+	deathwall = CreateDeathWall(ecs, deathWallWidth);
+
+	InitializePlatforms(ecs, *m_platformFactory.get(), deathWallWidth, platforms);
 }
 
 void Scene::Render() {
@@ -49,9 +51,14 @@ void Scene::Update(float deltaTime) {
 	Systems::ApplyForces(ecs, player, deltaTime);
 	Systems::HandleSolidCollisions(ecs, player, deltaTime);
 	Systems::Move(ecs, player, deltaTime);
+	Systems::HandleScreenBounds(ecs, player, *Context::GetCamera());
 
 	// DEATH WALL
 	Systems::Move(ecs, deathwall, deltaTime);
 	Systems::HandlePlayerPassesDeathwall(ecs, player, deathwall);
 	Systems::MoveCameraWithDeathwall(ecs, *Context::GetCamera(), deathwall, deltaTime);
+
+	for (EntityID platform : platforms) {
+		Systems::PollRespawnPlatform(ecs, *Context::GetCamera(), platform, deathwall);
+	}
 }

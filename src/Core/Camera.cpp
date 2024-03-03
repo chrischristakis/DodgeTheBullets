@@ -49,6 +49,10 @@ float Camera::GetZoom() {
 	return m_zoom;
 }
 
+glm::vec2 Camera::GetPosition() {
+	return m_position;
+}
+
 /*! Resizes the viewport to fit the window dimensions and adds letterboxing
 *	@param width: Width of window after resize
 *   @param height: Height of window after resize
