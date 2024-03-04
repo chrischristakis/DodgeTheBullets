@@ -15,7 +15,6 @@ Scene::Scene() {
 	m_quadShader = std::make_unique<Shader>("shaders/shader.vs", "shaders/shader.fs");
 	m_renderer = std::make_unique<Renderer>();
 	m_ecs = std::make_unique<ECS>(100);
-	m_platformFactory = std::make_unique<PlatformFactory>(3.0f, 0.25f);
 
 	ECS& ecs = *m_ecs.get();
 
@@ -28,16 +27,17 @@ Scene::Scene() {
 	player = CreatePlayer(ecs, { 0, -5 }, { 1, 1 });
 	deathwall = CreateDeathWall(ecs, deathWallWidth);
 
-	InitializePlatforms(ecs, *m_platformFactory.get(), deathWallWidth, platforms);
+	// Platform manager init
+	m_platformManager = std::make_unique<PlatformManager>(m_ecs.get());
 }
 
 void Scene::Render() {
 	ECS& ecs = *m_ecs.get();
 	Renderer& renderer = *m_renderer.get();
 	Shader& quadShader = *m_quadShader.get();
+	PlatformManager& platformManager = *m_platformManager.get();
 	
-	for (EntityID platform : platforms)
-		Systems::RenderQuad(ecs, platform, renderer, quadShader);
+	platformManager.Render(renderer, quadShader);
 
 	Systems::RenderQuad(ecs, player, renderer, quadShader);
 	Systems::RenderQuad(ecs, deathwall, renderer, quadShader);
@@ -45,6 +45,7 @@ void Scene::Render() {
 
 void Scene::Update(float deltaTime) {
 	ECS& ecs = *m_ecs.get();
+	PlatformManager& platformManager = *m_platformManager.get();
 
 	// PLAYER
 	Systems::ProcessMovementInput(ecs, player, *Context::GetWindow(), deltaTime);
@@ -58,7 +59,6 @@ void Scene::Update(float deltaTime) {
 	Systems::HandlePlayerPassesDeathwall(ecs, player, deathwall);
 	Systems::MoveCameraWithDeathwall(ecs, *Context::GetCamera(), deathwall, deltaTime);
 
-	for (EntityID platform : platforms) {
-		Systems::PollRespawnPlatform(ecs, *Context::GetCamera(), platform, deathwall);
-	}
+	platformManager.HandleRespawnPlatform(deathwall);
+
 }

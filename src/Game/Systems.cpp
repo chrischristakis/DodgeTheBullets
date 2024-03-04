@@ -47,7 +47,7 @@ namespace Systems {
 			if (!jumpComponent.jumping && jumpComponent.grounded) {
 				jumpComponent.jumping = true;
 				jumpComponent.grounded = false;
-				physics.velocity.y = -16.0f;
+				physics.velocity.y = -18.0f;
 			}
 		}
 
@@ -173,7 +173,7 @@ namespace Systems {
 		camera.Move(physics.velocity.x * deltaTime, physics.velocity.y * deltaTime);
 	}
 
-	void PollRespawnPlatform(ECS& ecs, PlatformFactory& factory, Camera& camera, EntityID platform, EntityID deathwall) {
+	void PollRespawnPlatform(ECS& ecs, PlatformManager& factory, Camera& camera, EntityID platform, EntityID deathwall) {
 		Transform& platformTransform = ecs.GetComponent<Transform>(platform);
 		Transform& wallTransform = ecs.GetComponent<Transform>(deathwall);
 

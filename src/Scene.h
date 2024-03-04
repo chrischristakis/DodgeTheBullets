@@ -4,7 +4,7 @@
 #include "ECS.h"
 #include "Core/Renderer.h"
 #include "Core/Shader.h"
-#include "Game/PlatformFactory.h"
+#include "Game/PlatformManager.h"
 
 class Scene {
 public:
@@ -17,7 +17,7 @@ private:
 
 	std::unique_ptr<Shader> m_quadShader;
 	std::unique_ptr<Renderer> m_renderer;
-	std::unique_ptr<PlatformFactory> m_platformFactory;
+	std::unique_ptr<PlatformManager> m_platformManager;
 	std::unique_ptr<ECS> m_ecs;
 
 };

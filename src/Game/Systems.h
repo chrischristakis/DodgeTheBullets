@@ -2,7 +2,7 @@
 
 #include "../ECS.h"
 #include "../Core/Common.h"
-#include "PlatformFactory.h"
+#include "PlatformManager.h"
 
 namespace Systems {
 	
@@ -20,7 +20,7 @@ namespace Systems {
 	void HandleScreenBounds(ECS& ecs, EntityID player, Camera& camera);
 	void MoveCameraWithDeathwall(ECS& ecs, Camera& camera, EntityID wall, float deltaTime);
 
-	void PollRespawnPlatform(ECS& ecs, PlatformFactory& factory, Camera& camera, EntityID platform, EntityID deathwall);
+	void PollRespawnPlatform(ECS& ecs, PlatformManager& factory, Camera& camera, EntityID platform, EntityID deathwall);
 
 	void RenderAxis(Renderer& renderer, Shader& shader);
 
