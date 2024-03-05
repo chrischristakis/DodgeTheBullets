@@ -1,4 +1,5 @@
 #include "EntityFactory.h"
+#include "../Components/Component.h"
 #include "../Context.h"
 
 EntityID CreatePlayer(ECS& ecs, glm::vec2 position, glm::vec2 size) {

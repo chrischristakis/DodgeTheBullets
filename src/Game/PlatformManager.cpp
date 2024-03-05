@@ -1,6 +1,7 @@
 #include "PlatformManager.h"
 #include "../Logging.h"
 #include "EntityFactory.h"
+#include "../Components/Component.h"
 #include "Systems.h"
 
 PlatformManager::PlatformManager(ECS* ecs): m_ecs(ecs) {

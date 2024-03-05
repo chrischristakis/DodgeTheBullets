@@ -5,6 +5,7 @@
 
 #include "Context.h"
 #include "ECS.h"
+#include "Components/Component.h"
 #include "Game/Systems.h"
 #include "Game/EntityFactory.h"
 

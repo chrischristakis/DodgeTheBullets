@@ -6,7 +6,12 @@
 #include <iostream>
 #include <queue>
 #include "Logging.h"
-#include "Components/Component.h"
+
+// Base class allows component pool abstraction
+// Components are simply PODs that *should* have no logic within them.
+struct Component {
+	virtual ~Component() { }
+};
 
 /*! Unique identifier that represents an entity in ECS
 */

@@ -1,11 +1,7 @@
 #pragma once
 
+#include "../ECS.h"
 #include <glm/glm.hpp>
-
-// Base class allows component pool abstraction
-struct Component {
-	virtual ~Component() { }
-};
 
 // ----- COMPONENTS ----- //
 // Components MUST implement a default constructor, or compiler error
