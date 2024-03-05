@@ -23,7 +23,7 @@ EntityID CreatePlatform(ECS& ecs, glm::vec2 position, glm::vec2 size) {
 	return platform;
 }
 
-EntityID CreateDeathWall(ECS& ecs, float width) {
+EntityID CreateDeathWall(ECS& ecs, float width, float initialSpeed) {
 	EntityID deathwall = ecs.CreateEntity();
 
 	float cameraHalfWidth = Context::GetCamera()->GetHalfWidth();
@@ -31,7 +31,7 @@ EntityID CreateDeathWall(ECS& ecs, float width) {
 
 	// Aligns to the left edge of the screen, with the height of the screen, and a given width
 	ecs.AddComponent<Transform>(deathwall, { { -cameraHalfWidth, -cameraHalfHeight }, { width, cameraHalfHeight * 2 } });
-	ecs.AddComponent<Physics>(deathwall, { {7.0f, 0.0f} });
+	ecs.AddComponent<Physics>(deathwall, { {initialSpeed, 0.0f} });
 	ecs.AddComponent<Renderable>(deathwall, { glm::vec3(1, 0.25f, 0.2f) });
 
 	return deathwall;

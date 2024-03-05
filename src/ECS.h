@@ -8,7 +8,7 @@
 #include "Logging.h"
 #include "Components/Component.h"
 
-/*! Unique identifier that binds data together in ECS
+/*! Unique identifier that represents an entity in ECS
 */
 using EntityID = unsigned int;
 
@@ -30,24 +30,25 @@ private:
 	struct BaseComponentPool {
 	public:
 		virtual ~BaseComponentPool() { }
+		virtual std::unique_ptr<BaseComponentPool> clone() const = 0;
 	};
 
 	template <typename T>
 	class ComponentPool : public BaseComponentPool {
 	public:
 		
-
 		ComponentPool(int MAX_ENTITIES) : m_MAX_ENTITIES(MAX_ENTITIES) {
-
 			// Reserve space and removes the exponential copies that happen as the vector resizes
 			m_pool.reserve(MAX_ENTITIES);
 
 			for (int i = 0; i < MAX_ENTITIES; i++)
 				m_pool.push_back(T());
-
 		}
 
-		template <typename T>
+		std::unique_ptr<BaseComponentPool> clone() const override {
+			return std::make_unique<ComponentPool<T>>(*this);
+		}
+
 		T* AddComponent(EntityID id, T&& component) {
 			LOG_ASSERT(id >= 0 && id < m_MAX_ENTITIES, "Entity index out of range");
 
@@ -55,7 +56,6 @@ private:
 			return &m_pool[id];
 		}
 
-		template <typename T>
 		T* GetComponent(EntityID id) {
 			LOG_ASSERT(id >= 0 && id < m_MAX_ENTITIES, "Entity index out of range");
 
@@ -85,6 +85,17 @@ public:
 			m_availableEntities.push(i);
 		}
 
+	}
+
+	// Copy constructor, useful for resetting game state back to a previous one
+	ECS(ECS& source) {
+		m_MAX_ENTITIES = source.m_MAX_ENTITIES;
+		m_entityPool = source.m_entityPool;
+		m_availableEntities = source.m_availableEntities;
+
+		m_componentPools.clear();
+		for (auto& [componentName, pool] : source.m_componentPools)
+			m_componentPools[componentName] = pool->clone();
 	}
 
 	/*! Return an Entity ID that is ready for use, used to index the rest of the ECS
@@ -140,7 +151,7 @@ public:
 
 		LOG_ASSERT(pool, "Dynamic cast for component pool of type '" << componentName << "' failed");
 
-		T* componentPtr = pool->AddComponent<T>(id, std::move(component));
+		T* componentPtr = pool->AddComponent(id, std::move(component));
 
 		// Entity now contains the component we just added to it
 		componentMap.insert({ componentName, componentPtr });
@@ -197,7 +208,7 @@ public:
 
 		LOG_ASSERT(pool, "Dynamic cast for component pool of type '" << componentName << "' failed");
 
-		return *pool->GetComponent<T>(id);
+		return *pool->GetComponent(id);
 	}
 
 	/*! Remove a component from an entity
@@ -239,10 +250,11 @@ public:
 	*/
 	std::vector<EntityID> GetAllActiveIDs() {
 		std::vector<EntityID> res;
-		for (int i = 0; i < m_entityPool.size(); i++) {
+
+		for (int i = 0; i < m_entityPool.size(); i++)
 			if (m_entityPool[i].inUse)
 				res.push_back(i);
-		}
+
 		return res;
 	}
 
@@ -260,7 +272,7 @@ public:
 
 	/*
 	*  HELPFUL PRINTING STATEMENTS FOR DEBUGGING
-	*  - Slow though, should not be used in release
+	*  - Slow, should not be used in release
 	*/
 	void PrintAvailableEntities() {
 		std::queue copy = m_availableEntities;

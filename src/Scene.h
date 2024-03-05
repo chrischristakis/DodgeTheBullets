@@ -13,6 +13,8 @@ public:
 	void Update(float deltaTime);
 	void Render();
 
+	void Reset();
+
 private:
 
 	std::unique_ptr<Shader> m_quadShader;

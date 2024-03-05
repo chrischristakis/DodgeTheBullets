@@ -21,14 +21,20 @@ Scene::Scene() {
 	// Register ECS components on scene construction
 	ecs.RegisterComponent<Transform>();
 	ecs.RegisterComponent<Physics>();
-
+	  
 	float deathWallWidth = 5.0f;
 
 	player = CreatePlayer(ecs, { 0, -5 }, { 1, 1 });
-	deathwall = CreateDeathWall(ecs, deathWallWidth);
+	deathwall = CreateDeathWall(ecs, deathWallWidth, 4.0f);
 
 	// Platform manager init
 	m_platformManager = std::make_unique<PlatformManager>(m_ecs.get());
+}
+
+void Scene::Reset() {
+	m_platformManager.get()->Reset();
+
+
 }
 
 void Scene::Render() {
